@@ -6,15 +6,16 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:to_do/presentation/home_screen/home.dart';
 import 'package:to_do/models/todo_item.dart';
 
-
 const defaultFirebaseOptions = FirebaseOptions(
-    apiKey: "AIzaSyAS1kE5gnalfAUVSF13YtZ7o_UxgM3qYRw",
-    authDomain: "todo-789.firebaseapp.com",
-    projectId: "todo-789",
-    storageBucket: "todo-789.appspot.com",
-    messagingSenderId: "234960648188",
-    appId: "1:234960648188:web:4298086e3844be8a9ce479",);
+  apiKey: "AIzaSyAS1kE5gnalfAUVSF13YtZ7o_UxgM3qYRw",
+  authDomain: "todo-789.firebaseapp.com",
+  projectId: "todo-789",
+  storageBucket: "todo-789.appspot.com",
+  messagingSenderId: "234960648188",
+  appId: "1:234960648188:web:4298086e3844be8a9ce479",
+);
 
+// Hello
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +23,7 @@ void main() async {
   Hive.registerAdapter(TodoItemAdapter());
 
   await Firebase.initializeApp(options: defaultFirebaseOptions);
-  
+
   // ignore: unused_local_variable
   var box = await Hive.openBox<TodoItem>('todos');
 
