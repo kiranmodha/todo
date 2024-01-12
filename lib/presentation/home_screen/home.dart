@@ -244,6 +244,15 @@ class _HomeState extends State<Home> {
       child: Container(
         child: ListTile(
           onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                item.toString(),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            ));
             _showTaskDialog(item, 1); // 1 - edit
           },
           splashColor: Theme.of(context).colorScheme.primaryContainer,
@@ -252,7 +261,8 @@ class _HomeState extends State<Home> {
           leading: Checkbox(
             value: item.isDone,
             onChanged: (bool? newValue) {
-              db.updateTodoItem(item, item.copyWith(isDone: newValue!));
+              //db.updateTodoItem(item, item.copyWith(isDone: newValue!));
+              db.updateTodoItemByKey(item.key, item.copyWith(isDone: newValue!));
               // db.updateTodoItem(
               //     item,
               //     TodoItem(
@@ -260,9 +270,10 @@ class _HomeState extends State<Home> {
               //         isDone: newValue!,
               //         dueDate: item.dueDate,
               //         note: item.note));
-              setState(() {
-                item.isDone = newValue;
-              });
+              // setState(() {
+              //   item.isDone = newValue;
+              // });
+              populateList();
             },
           ),
           trailing: Wrap(
@@ -297,7 +308,8 @@ class _HomeState extends State<Home> {
           //     note: item.note,
           //     isDeleted: false);
           //item.isDeleted = true;
-          db.updateTodoItem(item, item.copyWith(isDeleted: false));
+         // db.updateTodoItem(item, item.copyWith(isDeleted: false));
+          db.updateTodoItemByKey(item.key, item.copyWith(isDeleted: false));
           populateList();
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -331,13 +343,14 @@ class _HomeState extends State<Home> {
                     if (item.isDeleted ?? false) {
                       db.deleteTodoItemByKey(item.key);
                     } else {
-                      TodoItem newItem = TodoItem(
-                          toBeDone: item.toBeDone,
-                          isDone: item.isDone,
-                          dueDate: item.dueDate,
-                          note: item.note,
-                          isDeleted: true);
-                      db.updateTodoItem(item, newItem);
+                      // TodoItem newItem = TodoItem(
+                      //     toBeDone: item.toBeDone,
+                      //     isDone: item.isDone,
+                      //     dueDate: item.dueDate,
+                      //     note: item.note,
+                      //     isDeleted: true);
+                     // db.updateTodoItem(item, newItem);
+                      db.updateTodoItemByKey(item.key, item.copyWith(isDeleted: true));
                     }
                     populateList();
                     Navigator.of(context).pop();

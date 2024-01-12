@@ -71,6 +71,13 @@ class TodoItem extends HiveObject {
         isSyncedWithCloud: json['isSyncedWithCloud'] ?? false);
   }
 
+  // ToString Method
+  @override
+  String toString() {
+    return 'TodoItem{toBeDone: $toBeDone, isDone: $isDone, dueDate: $dueDate, note: $note, isDeleted: $isDeleted, documentID: $documentID, isSyncedWithCloud: $isSyncedWithCloud}';
+  }
+
+
   TodoItem copyWith({
     String? toBeDone,
     bool? isDone,
