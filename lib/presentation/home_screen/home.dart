@@ -244,15 +244,15 @@ class _HomeState extends State<Home> {
       child: Container(
         child: ListTile(
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(
-                item.toString(),
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            ));
+            // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            //   content: Text(
+            //     item.toString(),
+            //     style: TextStyle(
+            //         color: Theme.of(context).colorScheme.primary,
+            //         fontWeight: FontWeight.bold),
+            //   ),
+            //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            // ));
             _showTaskDialog(item, 1); // 1 - edit
           },
           splashColor: Theme.of(context).colorScheme.primaryContainer,
