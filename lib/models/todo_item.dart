@@ -70,4 +70,24 @@ class TodoItem extends HiveObject {
         documentID: json['documentID'] ?? "",
         isSyncedWithCloud: json['isSyncedWithCloud'] ?? false);
   }
+
+  TodoItem copyWith({
+    String? toBeDone,
+    bool? isDone,
+    DateTime? dueDate,
+    String? note,
+    bool? isDeleted,
+    String? documentID,
+    bool? isSyncedWithCloud,
+  }) {
+    return TodoItem(
+      toBeDone: toBeDone ?? this.toBeDone,
+      isDone: isDone ?? this.isDone,
+      dueDate: dueDate ?? this.dueDate,
+      note: note ?? this.note,
+      isDeleted: isDeleted ?? this.isDeleted,
+      documentID: documentID ?? this.documentID,
+      isSyncedWithCloud: isSyncedWithCloud ?? this.isSyncedWithCloud,
+    );
+  }
 }
