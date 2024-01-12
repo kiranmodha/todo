@@ -6,9 +6,6 @@ import 'package:to_do/database/hive_db.dart';
 import 'package:to_do/presentation/home_screen/dialog_box.dart';
 import 'package:to_do/models/todo_item.dart';
 
-
-
-
 class Home extends StatefulWidget {
   const Home({super.key});
   @override
@@ -54,7 +51,6 @@ class _HomeState extends State<Home> {
       }
     });
   }
-
 
   void _showTaskDialog(TodoItem? item, int mode) {
     TodoItem todoItem = mode == 0
@@ -138,8 +134,6 @@ class _HomeState extends State<Home> {
                   visible: selectionMode == SelectionMode.search,
                   child: _buildSearchBox(context)),
               _buildListView(context),
-
-              
             ],
           ),
         )
@@ -258,13 +252,14 @@ class _HomeState extends State<Home> {
           leading: Checkbox(
             value: item.isDone,
             onChanged: (bool? newValue) {
-              db.updateTodoItem(
-                  item,
-                  TodoItem(
-                      toBeDone: item.toBeDone,
-                      isDone: newValue!,
-                      dueDate: item.dueDate,
-                      note: item.note));
+              db.updateTodoItem(item, item.copyWith(isDone: newValue!));
+              // db.updateTodoItem(
+              //     item,
+              //     TodoItem(
+              //         toBeDone: item.toBeDone,
+              //         isDone: newValue!,
+              //         dueDate: item.dueDate,
+              //         note: item.note));
               setState(() {
                 item.isDone = newValue;
               });
@@ -295,14 +290,14 @@ class _HomeState extends State<Home> {
         icon: Icon(Icons.restore_from_trash,
             color: Theme.of(context).colorScheme.primary, size: 20),
         onPressed: () {
-          TodoItem newItem = TodoItem(
-              toBeDone: item.toBeDone,
-              isDone: item.isDone,
-              dueDate: item.dueDate,
-              note: item.note,
-              isDeleted: false);
+          // TodoItem newItem = TodoItem(
+          //     toBeDone: item.toBeDone,
+          //     isDone: item.isDone,
+          //     dueDate: item.dueDate,
+          //     note: item.note,
+          //     isDeleted: false);
           //item.isDeleted = true;
-          db.updateTodoItem(item, newItem);
+          db.updateTodoItem(item, item.copyWith(isDeleted: false));
           populateList();
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
