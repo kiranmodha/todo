@@ -83,8 +83,105 @@ class HiveDb {
     }
   }
 
-  void deleteTodoItemByKey(int key) {
-    _todoBox.delete(key);
+  // void deleteTodoItemByKey(int key) {
+  //   _todoBox.delete(key);
+  // }
+
+  bool deleteTodoItemByKey(int key) {
+    final TodoItem? item = _todoBox.get(key);
+    if (item != null &&
+        item.documentID != null &&
+        item.documentID!.isNotEmpty) {
+      try {
+        FirebaseFirestore.instance
+            .collection('todo')
+            .doc(item.documentID)
+            .delete();
+        _todoBox.delete(key);
+      } catch (e) {
+        print("Error in deleting cloud record: $e");
+        return false;
+      }
+    } else {
+      //_todoBox.delete(key);
+      return false;
+    }
+    return true;
+  }
+
+// Future<bool> deleteTodoItemByKey(int key) async {
+//   final TodoItem? item = _todoBox.get(key);
+//   if (item != null && item.documentID != null && item.documentID!.isNotEmpty) {
+//     try {
+//       await FirebaseFirestore.instance
+//           .collection('todo')
+//           .doc(item.documentID)
+//           .delete();
+//       _todoBox.delete(key);
+//     } catch (e) {
+//       print("Error in deleting cloud record: $e");
+//       return false;
+//     }
+//   } else {
+//     //_todoBox.delete(key);
+//     return false;
+//   }
+//   return true;
+// }
+
+  // Future<void> syncDataFromFirebase() async {
+  //   // Check if local database is empty
+  //   if (_todoBox.isEmpty) {
+  //     try {
+  //       // Fetch data from Firebase
+  //       QuerySnapshot querySnapshot =
+  //           await FirebaseFirestore.instance.collection('todo').get();
+
+  //       // If data found on the cloud
+  //       if (querySnapshot.docs.isNotEmpty) {
+  //         // Populate local database
+  //         for (var doc in querySnapshot.docs) {
+  //           TodoItem item = TodoItem.fromJson(doc.data());
+
+  //           _todoBox.put(item.key, item);
+  //         }
+  //       }
+  //     } catch (e) {
+  //       print('Error in fetching data from Firebase: $e');
+  //     }
+  //   }
+  // }
+
+  Future<void> syncDataFromFirebase() async {
+    // Check if local database is empty
+    if (_todoBox.isEmpty) {
+      try {
+        // Fetch data from Firebase
+        QuerySnapshot querySnapshot =
+            await FirebaseFirestore.instance.collection('todo').get();
+
+        // If data found on the cloud
+        if (querySnapshot.docs.isNotEmpty) {
+          // Populate local database
+          for (var doc in querySnapshot.docs) {
+            try {
+              // Ensure that all required fields are present in the Firestore document
+              var data = doc.data() as Map<String, dynamic>?;
+
+              if (data != null && data.isNotEmpty) {
+                TodoItem item = TodoItem.fromJson(data);
+                item.documentID = doc.reference.id;
+                _todoBox.add(item);
+              }
+            } catch (e) {
+              print('Error converting Firestore data to TodoItem: $e');
+            }
+          }
+        }
+      } catch (e) {
+        print('Error in fetching data from Firebase: $e');
+      }
+    }
   }
 
   List<TodoItem> getAllTodoItems() {

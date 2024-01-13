@@ -26,7 +26,8 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     db.openBox();
-    populateList();
+    db.syncDataFromFirebase().then((value) => populateList());
+   // populateList();
   }
 
   void populateList() {
@@ -183,26 +184,17 @@ class _HomeState extends State<Home> {
   }
 
   Container _buildSearchBox(BuildContext context) {
-    //final TextEditingController controller = TextEditingController();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextField(
         controller: searchTextController,
         style: const TextStyle(fontSize: 18),
         onChanged: (value) {
-          // setState(() {
-          //   toDoList = db.getTodoItemsByTextContain(value);
-          // });
           populateList();
         },
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
           prefixIcon: Icon(Icons.search),
-          // suffixIcon: IconButton(
-          //     icon: const Icon(Icons.clear),
-          //     onPressed: () {
-          //       controller.clear();
-          //     }),
           hintText: "Search",
           labelText: "Search",
         ),
@@ -212,7 +204,7 @@ class _HomeState extends State<Home> {
 
   Widget _buildListView(BuildContext context) {
     return Expanded(
-      //without this widget, listview will not be visible
+      //without Expanded widget, listview will not be visible
       child: toDoList.isEmpty
           ? Center(
               child: Text("No Item Found",
@@ -244,15 +236,6 @@ class _HomeState extends State<Home> {
       child: Container(
         child: ListTile(
           onTap: () {
-            // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            //   content: Text(
-            //     item.toString(),
-            //     style: TextStyle(
-            //         color: Theme.of(context).colorScheme.primary,
-            //         fontWeight: FontWeight.bold),
-            //   ),
-            //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            // ));
             _showTaskDialog(item, 1); // 1 - edit
           },
           splashColor: Theme.of(context).colorScheme.primaryContainer,
@@ -261,23 +244,12 @@ class _HomeState extends State<Home> {
           leading: Checkbox(
             value: item.isDone,
             onChanged: (bool? newValue) {
-              //db.updateTodoItem(item, item.copyWith(isDone: newValue!));
-              db.updateTodoItemByKey(item.key, item.copyWith(isDone: newValue!));
-              // db.updateTodoItem(
-              //     item,
-              //     TodoItem(
-              //         toBeDone: item.toBeDone,
-              //         isDone: newValue!,
-              //         dueDate: item.dueDate,
-              //         note: item.note));
-              // setState(() {
-              //   item.isDone = newValue;
-              // });
+              db.updateTodoItemByKey(
+                  item.key, item.copyWith(isDone: newValue!));
               populateList();
             },
           ),
           trailing: Wrap(
-            //  mainAxisSize: MainAxisSize.min,
             spacing: 12,
             children: [
               deleteButton(context, item),
@@ -301,17 +273,8 @@ class _HomeState extends State<Home> {
         icon: Icon(Icons.restore_from_trash,
             color: Theme.of(context).colorScheme.primary, size: 20),
         onPressed: () {
-          // TodoItem newItem = TodoItem(
-          //     toBeDone: item.toBeDone,
-          //     isDone: item.isDone,
-          //     dueDate: item.dueDate,
-          //     note: item.note,
-          //     isDeleted: false);
-          //item.isDeleted = true;
-         // db.updateTodoItem(item, item.copyWith(isDeleted: false));
           db.updateTodoItemByKey(item.key, item.copyWith(isDeleted: false));
           populateList();
-
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
               'Item successfully recalled',
@@ -343,14 +306,8 @@ class _HomeState extends State<Home> {
                     if (item.isDeleted ?? false) {
                       db.deleteTodoItemByKey(item.key);
                     } else {
-                      // TodoItem newItem = TodoItem(
-                      //     toBeDone: item.toBeDone,
-                      //     isDone: item.isDone,
-                      //     dueDate: item.dueDate,
-                      //     note: item.note,
-                      //     isDeleted: true);
-                     // db.updateTodoItem(item, newItem);
-                      db.updateTodoItemByKey(item.key, item.copyWith(isDeleted: true));
+                      db.updateTodoItemByKey(
+                          item.key, item.copyWith(isDeleted: true));
                     }
                     populateList();
                     Navigator.of(context).pop();
