@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:to_do/presentation/home_screen/home.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do/core/utils/google_signin_provider.dart';
 import 'package:to_do/models/todo_item.dart';
+
+import 'presentation/welcome_screen/sign_in.dart';
 
 const defaultFirebaseOptions = FirebaseOptions(
   apiKey: "AIzaSyAS1kE5gnalfAUVSF13YtZ7o_UxgM3qYRw",
@@ -22,7 +25,11 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TodoItemAdapter());
 
-  await Firebase.initializeApp(options: defaultFirebaseOptions);
+  if (kIsWeb) {
+    await Firebase.initializeApp(options: defaultFirebaseOptions);
+  } else {
+    await Firebase.initializeApp();
+  }
 
   // ignore: unused_local_variable
   var box = await Hive.openBox<TodoItem>('todos');
@@ -42,20 +49,40 @@ void main() async {
 //  runApps(cont MyApp());
 // }
 
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   // This widget is the root of your application.
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       // debugShowMaterialGrid: true,
+//       theme: ThemeData(
+//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+//         useMaterial3: true,
+//       ),
+//       home: const Home(),
+//     );
+//   }
+// }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      // debugShowMaterialGrid: true,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => GoogleSignInProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+          useMaterial3: true,
+        ),
+        home: const SignIn(), // Change to WelcomeScreen
       ),
-      home: const Home(),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 //import 'package:to_do/core/utils/custom_imageview.dart';
 //import 'package:to_do/core/utils/image_constants.dart';
@@ -16,6 +17,8 @@ enum SelectionMode { all, completed, search, deleted }
 
 class _HomeState extends State<Home> {
   final searchTextController = TextEditingController();
+  final user = FirebaseAuth.instance.currentUser;
+
   SelectionMode selectionMode = SelectionMode.all;
   List<TodoItem> toDoList = [];
   dynamic currentKey;
@@ -27,7 +30,6 @@ class _HomeState extends State<Home> {
     super.initState();
     db.openBox();
     db.syncDataFromFirebase().then((value) => populateList());
-   // populateList();
   }
 
   void populateList() {
@@ -53,22 +55,22 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _showTaskDialog(TodoItem? item, int mode) {
+  void _showTaskDialog(TodoItem? originalTodoItem, int mode) {
     TodoItem todoItem = mode == 0
         ? TodoItem(
             toBeDone: "", isDone: false, dueDate: DateTime.now(), note: "")
-        : item!;
+        : originalTodoItem!;
     String title = mode == 0 ? "Add Task" : "Edit Task";
 
     showDialog(
         context: context,
         builder: (context) {
           return DialogBox(title: title, toDoItem: todoItem);
-        }).then((obj) {
-      if (obj != null) {
+        }).then((returnedTodoItem) {
+      if (returnedTodoItem != null) {
         mode == 0
-            ? db.addTodoItem(obj)
-            : db.updateTodoItemByKey(item!.key, obj);
+            ? db.addTodoItem(returnedTodoItem)
+            : db.updateTodoItemByKey(originalTodoItem!.key, returnedTodoItem);
         populateList();
       }
     });
@@ -78,6 +80,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      drawer: NavigationDrawer(user: user!),
       appBar: _buildAppBar(context),
       body: _buildBody(context),
       floatingActionButton: Visibility(
@@ -92,8 +95,8 @@ class _HomeState extends State<Home> {
       backgroundColor: Theme.of(context).colorScheme.primary,
       elevation: 0,
       title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Icon(Icons.menu,
-            color: Theme.of(context).colorScheme.onPrimary, size: 20),
+        // Icon(Icons.menu,
+        //     color: Theme.of(context).colorScheme.onPrimary, size: 20),
         Text(
           'To Do',
           style: TextStyle(
@@ -223,57 +226,63 @@ class _HomeState extends State<Home> {
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary)),
                 ),
-                for (TodoItem item in toDoList) _buildToDoItem(context, item)
+                for (TodoItem todoItem in toDoList)
+                  _buildToDoItem(context, todoItem)
               ],
             ),
     );
   }
 
-  Padding _buildToDoItem(BuildContext context, TodoItem item) {
+  Padding _buildToDoItem(BuildContext context, TodoItem todoItem) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       // ignore: avoid_unnecessary_containers
       child: Container(
         child: ListTile(
           onTap: () {
-            _showTaskDialog(item, 1); // 1 - edit
+            _showTaskDialog(todoItem, 1); // 1 - edit
           },
           splashColor: Theme.of(context).colorScheme.primaryContainer,
           tileColor: Theme.of(context).colorScheme.inversePrimary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           leading: Checkbox(
-            value: item.isDone,
+            value: todoItem.isDone,
             onChanged: (bool? newValue) {
               db.updateTodoItemByKey(
-                  item.key, item.copyWith(isDone: newValue!));
+                  todoItem.key, todoItem.copyWith(isDone: newValue!));
               populateList();
             },
           ),
           trailing: Wrap(
             spacing: 12,
             children: [
-              deleteButton(context, item),
+              deleteButton(context, todoItem),
               Visibility(
-                  visible: item.isDeleted ?? false,
-                  child: recycleButton(context, item))
+                visible: todoItem.isDeleted ?? false,
+                child: recycleButton(context, todoItem),
+              )
             ],
           ),
-          title: Text(item.toBeDone,
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontSize: 16,
-                  decoration: item.isDone ? TextDecoration.lineThrough : null)),
+          title: Text(
+            todoItem.toBeDone,
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                fontSize: 16,
+                decoration:
+                    todoItem.isDone ? TextDecoration.lineThrough : null),
+          ),
         ),
       ),
     );
   }
 
-  IconButton recycleButton(BuildContext context, TodoItem item) {
+  IconButton recycleButton(BuildContext context, TodoItem todoItem) {
     return IconButton(
         icon: Icon(Icons.restore_from_trash,
             color: Theme.of(context).colorScheme.primary, size: 20),
         onPressed: () {
-          db.updateTodoItemByKey(item.key, item.copyWith(isDeleted: false));
+          db.updateTodoItemByKey(
+              todoItem.key, todoItem.copyWith(isDeleted: false));
           populateList();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
@@ -287,9 +296,9 @@ class _HomeState extends State<Home> {
         });
   }
 
-  IconButton deleteButton(BuildContext context, TodoItem item) {
+  IconButton deleteButton(BuildContext context, TodoItem todoItem) {
     String text =
-        item.isDeleted ?? false ? 'delete forever' : 'send to recylce bin';
+        todoItem.isDeleted ?? false ? 'delete forever' : 'send to recylce bin';
     return IconButton(
       icon: Icon(Icons.delete,
           color: Theme.of(context).colorScheme.primary, size: 20),
@@ -303,11 +312,11 @@ class _HomeState extends State<Home> {
                 TextButton(
                   child: const Text('Yes'),
                   onPressed: () {
-                    if (item.isDeleted ?? false) {
-                      db.deleteTodoItemByKey(item.key);
+                    if (todoItem.isDeleted ?? false) {
+                      db.deleteTodoItemByKey(todoItem.key);
                     } else {
                       db.updateTodoItemByKey(
-                          item.key, item.copyWith(isDeleted: true));
+                          todoItem.key, todoItem.copyWith(isDeleted: true));
                     }
                     populateList();
                     Navigator.of(context).pop();
@@ -324,6 +333,37 @@ class _HomeState extends State<Home> {
           },
         );
       },
+    );
+  }
+}
+
+class NavigationDrawer extends StatelessWidget {
+  final User user;
+
+  const NavigationDrawer({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: Text(user.displayName ?? ""),
+            accountEmail: Text(user.email ?? ""),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: NetworkImage(user.photoURL ?? ""),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Sign Out'),
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+          ),
+        ],
+      ),
     );
   }
 }

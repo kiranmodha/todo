@@ -11,91 +11,74 @@ class HiveDb {
     _todoBox = await Hive.openBox<TodoItem>('todos');
   }
 
-  // void addTodoItem(TodoItem item) {
-  //   _todoBox.add(item);
-  //    FirebaseFirestore.instance
-  //                         .collection('todo')
-  //                         .add(item.toJson());
-  // }
-
-  void addTodoItem(TodoItem item) {
-    _todoBox.add(item);
+  void addTodoItem(TodoItem todoItem) {
+    _todoBox.add(todoItem);
     FirebaseFirestore.instance
         .collection('todo')
-        .add(item.toJsonForCloud())
+        .add(todoItem.toJsonForCloud())
         .then((DocumentReference document) {
-      item.documentID = document.id;
-      item.isSyncedWithCloud = true;
-      _todoBox.putAt(_todoBox.values.toList().indexOf(item), item);
+      todoItem.documentID = document.id;
+      todoItem.isSyncedWithCloud = true;
+      _todoBox.putAt(_todoBox.values.toList().indexOf(todoItem), todoItem);
     });
   }
 
-  // void updateTodoItem(TodoItem oldItem, TodoItem newItem) {
-  //   final int index = _todoBox.values.toList().indexOf(oldItem);
-  //   if (index != -1) {
-  //     _todoBox.putAt(index, newItem);
-  //   }
-  // }
-
-  void updateTodoItem(TodoItem oldItem, TodoItem newItem) {
-    final int index = _todoBox.values.toList().indexOf(oldItem);
+  void updateTodoItem(TodoItem oldTodoItem, TodoItem newTodoItem) {
+    final int index = _todoBox.values.toList().indexOf(oldTodoItem);
     if (index != -1) {
-      newItem.isSyncedWithCloud = false;
-      _todoBox.putAt(index, newItem);
+      newTodoItem.isSyncedWithCloud = false;
+      _todoBox.putAt(index, newTodoItem);
 
       // update firebase database
-      if (oldItem.documentID != null && oldItem.documentID!.isNotEmpty) {
+      if (oldTodoItem.documentID != null &&
+          oldTodoItem.documentID!.isNotEmpty) {
         FirebaseFirestore.instance
             .collection('todo')
-            .doc(oldItem.documentID)
-            .update(newItem.toJsonForCloud())
+            .doc(oldTodoItem.documentID)
+            .update(newTodoItem.toJsonForCloud())
             .then((value) {
-          newItem.isSyncedWithCloud = true;
-          _todoBox.putAt(index, newItem);
+          newTodoItem.isSyncedWithCloud = true;
+          _todoBox.putAt(index, newTodoItem);
         });
       }
     }
   }
 
-  void updateTodoItemByKey(int key, TodoItem newItem) {
+  void updateTodoItemByKey(int key, TodoItem todoItem) {
     if (_todoBox.containsKey(key)) {
-      newItem.isSyncedWithCloud = false;
-      _todoBox.put(key, newItem);
+      todoItem.isSyncedWithCloud = false;
+      _todoBox.put(key, todoItem);
 
       // update firebase database
-      if (newItem.documentID != null && newItem.documentID!.isNotEmpty) {
+      if (todoItem.documentID != null && todoItem.documentID!.isNotEmpty) {
         FirebaseFirestore.instance
             .collection('todo')
-            .doc(newItem.documentID)
-            .update(newItem.toJsonForCloud())
+            .doc(todoItem.documentID)
+            .update(todoItem.toJsonForCloud())
             .then((value) {
-          newItem.isSyncedWithCloud = true;
-          _todoBox.put(key, newItem);
+          todoItem.isSyncedWithCloud = true;
+          _todoBox.put(key, todoItem);
         });
       }
     }
   }
 
-  void deleteTodoItem(TodoItem item) {
-    final int index = _todoBox.values.toList().indexOf(item);
+  void deleteTodoItem(TodoItem todoItem) {
+    final int index = _todoBox.values.toList().indexOf(todoItem);
     if (index != -1) {
       _todoBox.deleteAt(index);
     }
   }
 
-  // void deleteTodoItemByKey(int key) {
-  //   _todoBox.delete(key);
-  // }
-
   bool deleteTodoItemByKey(int key) {
-    final TodoItem? item = _todoBox.get(key);
-    if (item != null &&
-        item.documentID != null &&
-        item.documentID!.isNotEmpty) {
+    final TodoItem? todoItem = _todoBox.get(key);
+    if (todoItem != null &&
+        todoItem.documentID != null &&
+        todoItem.documentID!.isNotEmpty) {
       try {
         FirebaseFirestore.instance
             .collection('todo')
-            .doc(item.documentID)
+            .doc(todoItem.documentID)
             .delete();
         _todoBox.delete(key);
       } catch (e) {
@@ -223,14 +206,6 @@ class HiveDb {
   Future<void> close() async {
     await _todoBox.close();
   }
-
-  // List<TodoItem> getTodoItemsByTextContain(String text) {
-  //   var filteredItems = _todoBox.values
-  //       .where((todoItem)
-  //            => todoItem.toBeDone.contains(text))
-  //       .toList();
-  //   return filteredItems;
-  // }
 
   List<TodoItem> getTodoItemsByTextContain(String text) {
     var filteredItems = _todoBox.values
