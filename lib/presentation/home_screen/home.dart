@@ -1,3 +1,4 @@
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -93,30 +94,33 @@ class _HomeState extends State<Home> {
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
+      iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
       elevation: 0,
-      title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        // Icon(Icons.menu,
-        //     color: Theme.of(context).colorScheme.onPrimary, size: 20),
-        Text(
-          'To Do',
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onPrimary),
-        ),
-        IconButton(
-          onPressed: () => {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Programmed by Kiran Modha'),
-                backgroundColor: Theme.of(context).colorScheme.primary,
+      title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text(
+              'To Do',
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary),
+            ),
+            IconButton(
+              onPressed: () => {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Programmed by Kiran Modha'),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                )
+              },
+              icon: const Icon(
+                Icons.info,
+                size: 20,
               ),
-            )
-          },
-          icon: Icon(Icons.info,
-              color: Theme.of(context).colorScheme.onPrimary, size: 20),
-        ),
-      ]),
+            ),
+          ]),
     );
   }
 
@@ -154,7 +158,46 @@ class _HomeState extends State<Home> {
     );
   }
 
-  CurvedNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  ConvexAppBar _buildBottomNavigationBar(BuildContext context) {
+    return ConvexAppBar(
+      style: TabStyle.react,
+      color: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      activeColor: Theme.of(context).colorScheme.primary,
+      // animationDuration: const Duration(milliseconds: 200),
+      onTap: (index) {
+        setState(() {
+          selectionMode = SelectionMode.values[index];
+          populateList();
+        });
+      },
+      items: [
+        TabItem(
+            icon: Icon(
+          Icons.home,
+          color: Theme.of(context).colorScheme.onPrimary,
+        )),
+        TabItem(
+            icon: Icon(
+          Icons.done,
+          color: Theme.of(context).colorScheme.onPrimary,
+        )),
+        TabItem(
+            icon: Icon(
+          Icons.search,
+          color: Theme.of(context).colorScheme.onPrimary,
+        )),
+        TabItem(
+            icon: Icon(
+          Icons.delete,
+          color: Theme.of(context).colorScheme.onPrimary,
+        )),
+      ],
+    );
+  }
+
+
+  CurvedNavigationBar _buildBottomNavigationBar1(BuildContext context) {
     return CurvedNavigationBar(
       color: Theme.of(context).colorScheme.primary,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -345,6 +388,7 @@ class NavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
@@ -356,7 +400,7 @@ class NavigationDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.exit_to_app),
+            leading: const Icon(Icons.logout_sharp),
             title: const Text('Sign Out'),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
